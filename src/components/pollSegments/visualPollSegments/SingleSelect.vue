@@ -1,5 +1,6 @@
 <template>
   <v-select
+    :class="isCorretnAnswer"
     :options="optionsListForSelect"
     :reduce="(option) => option.id"
     v-model="selectedOptionId"
@@ -13,6 +14,7 @@
 
 <script>
 import { createPopper } from "@popperjs/core";
+import { mapState } from "vuex";
 
 export default {
   data() {
@@ -27,6 +29,22 @@ export default {
     optionsData: { type: Object },
     pollItemId: { type: String },
   },
+  computed: {
+    ...mapState({
+      showCurrentAnswer: (state) => state.showCurrentAnswer,
+    }),
+    isCorretnAnswer() {
+      if (
+        this.optionsData.currentAnswerId.length > 0 &&
+        this.showCurrentAnswer
+      ) {
+        return this.optionsData.currentAnswerId == this.selectedOptionId
+          ? "correct"
+          : "uncorrect";
+      }
+    },
+  },
+
   methods: {
     // dropdownShouldOpen: () => true,
     withPopper(dropdownList, component, { width }) {
@@ -56,6 +74,11 @@ export default {
       return () => popper.destroy();
     },
   },
+  watch: {
+    selectedOptionId() {
+      console.log(this.selectedOptionId);
+    },
+  },
   mounted() {
     this.optionsListForSelect = this.optionsData.optionsList.reduce(
       (acc, item) => {
@@ -73,6 +96,24 @@ export default {
 </script>
 
 <style lang="scss">
+.v-select {
+  &.correct {
+    .vs__selected {
+      color: #34df34;
+    }
+    .vs__clear {
+      display: none;
+    }
+  }
+  &.uncorrect {
+    .vs__selected {
+      color: red;
+    }
+    .vs__clear {
+      display: none;
+    }
+  }
+}
 .vs__dropdown-toggle {
   padding: 10px !important;
   border-radius: 4px !important;
@@ -145,6 +186,7 @@ export default {
 .vs__dropdown-menu {
   width: 100%;
   .vs__dropdown-option {
+    font-family: "Montserrat" !important;
     white-space: inherit;
     padding: 10px;
   }

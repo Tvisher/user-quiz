@@ -7,7 +7,7 @@
         @startQuiz="startQuiz"
       />
       <div v-else class="poll-items">
-        <app-poll-element
+        <!-- <app-poll-element
           v-show="answerNumber == index + 1"
           v-for="(quizQuestion, index) in quizQuestionsList"
           :pollItemId="quizQuestion.id"
@@ -19,7 +19,21 @@
           :pollNumber="index"
           :pollsLength="quizQuestionsList.length"
           @nextQuestion="nextQuestion"
-        />
+        /> -->
+        <app-poll-element
+          :pollItemId="quizQuestion.id"
+          :pollItemType="quizQuestion.type"
+          :pollItemDescr="quizQuestion.typeDescr"
+          :pollItemName="quizQuestion.typeName"
+          :pollItemData="quizQuestion.data"
+          :pollNumber="answerNumber"
+          :pollsLength="quizQuestionsList.length"
+          @nextQuestion="nextQuestion"
+        >
+          <button class="btn app-btn sub-btn" @click="nextQuestion">
+            {{ nextBtnText }}
+          </button>
+        </app-poll-element>
       </div>
     </div>
   </div>
@@ -32,7 +46,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapMutations, mapState } from "vuex";
 import AppPollElement from "./components/PollElement.vue";
 import AppStartPage from "./components/StartPage.vue";
 export default {
@@ -43,7 +57,7 @@ export default {
   name: "App",
   data() {
     return {
-      answerNumber: 1,
+      answerNumber: 0,
       startPage: true,
     };
   },
@@ -51,6 +65,7 @@ export default {
     ...mapState({
       quizQuestionsList: (state) => state.quizQuestionsList,
       appSettings: (state) => state.appSettings,
+      showCurrentAnswer: (state) => state.showCurrentAnswer,
     }),
     quizQuestionsListLength() {
       return this.quizQuestionsList.length;
@@ -62,14 +77,29 @@ export default {
         return { backgroundImage: "none" };
       }
     },
+    quizQuestion() {
+      return this.quizQuestionsList[this.answerNumber];
+    },
+
+    nextBtnText() {
+      return this.showCurrentAnswer === true ? "Далее" : "Ответить";
+    },
   },
   methods: {
+    ...mapMutations(["toggleShowCurrentAnswer"]),
+
     startQuiz() {
       this.startPage = false;
     },
     nextQuestion() {
-      if (this.answerNumber < this.quizQuestionsListLength) {
-        this.answerNumber++;
+      if (this.answerNumber < this.quizQuestionsListLength - 1) {
+        if (this.showCurrentAnswer === true) {
+          this.toggleShowCurrentAnswer();
+          this.answerNumber++;
+          return;
+        } else {
+          this.toggleShowCurrentAnswer();
+        }
       }
     },
   },

@@ -7,14 +7,26 @@ const quizID = document.querySelector('#app').dataset.pollId;
 export default createStore({
   state: {
     quizQuestionsList: [],
-    appSettings: {}
+    appSettings: {},
+    userAnswers: [],
+    showCurrentAnswer: false
   },
   getters: {
 
   },
   mutations: {
+    toggleShowCurrentAnswer(state) {
+      state.showCurrentAnswer = !state.showCurrentAnswer
+    },
     setQuizQuestionsList(state, payload) {
       state.quizQuestionsList = payload;
+      const userAnswersListDefault = payload.map(item => {
+        return {
+          questionId: item.id,
+          optionsList: item.data.optionsData.optionsList,
+          userResponse: [],
+        }
+      });
     },
     setQuizAppSettings(state, payload) {
       state.appSettings = payload;
@@ -25,13 +37,11 @@ export default createStore({
   actions: {
     getAppDataFromServer({ commit }) {
       const appData = JSON.parse(devJson.resState);
-      console.log(appData);
 
       const quizQuestionsList = appData.pollPages[0].pollList;
       commit('setQuizQuestionsList', quizQuestionsList);
 
       const appSettings = appData.appSettings;
-      console.log(appSettings);
       commit('setQuizAppSettings', appSettings);
 
     }

@@ -2,7 +2,10 @@
   <div class="single-choise-visual">
     <label
       class="single-choise-visual__label"
-      :class="{ checked: option.id === checkedInputId }"
+      :class="{
+        checked: option.id === checkedInputId,
+        current: option.id === correctAnswerId,
+      }"
       v-for="option in optionsData.optionsList"
       :key="option.id"
     >
@@ -18,6 +21,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   props: {
     optionsData: Object,
@@ -28,6 +33,21 @@ export default {
       checkedInputId: "",
     };
   },
+  computed: {
+    ...mapState({
+      showCurrentAnswer: (state) => state.showCurrentAnswer,
+    }),
+    correctAnswerId() {
+      if (
+        this.optionsData.currentAnswerId.length < 1 ||
+        !this.showCurrentAnswer === true
+      ) {
+        return null;
+      }
+      return this.optionsData.currentAnswerId[0];
+    },
+  },
+
   methods: {
     getChecket(inputId) {
       this.checkedInputId = inputId;
@@ -131,5 +151,9 @@ export default {
       opacity: 1;
     }
   }
+}
+
+.single-choise-visual__label.current {
+  background-color: rgba(0, 128, 0, 0.198);
 }
 </style>

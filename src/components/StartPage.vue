@@ -56,7 +56,7 @@ export default {
 .quiz-start {
   border-radius: 8px;
   padding: 45px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgb(255, 255, 255);
   backdrop-filter: blur(12px);
 }
 .quiz-start__head {

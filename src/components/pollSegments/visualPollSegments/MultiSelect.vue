@@ -2,6 +2,7 @@
   <v-select
     class="multi-select"
     multiple
+    :pushTags="true"
     :options="optionsListForSelect"
     :reduce="(option) => option.id"
     v-model="selectedOptionId"
@@ -15,6 +16,7 @@
 
 <script>
 import { createPopper } from "@popperjs/core";
+import { mapState } from "vuex";
 
 export default {
   data() {
@@ -29,8 +31,13 @@ export default {
     optionsData: { type: Object },
     pollItemId: { type: String },
   },
+  computed: {
+    ...mapState({
+      showCurrentAnswer: (state) => state.showCurrentAnswer,
+    }),
+  },
   methods: {
-    // dropdownShouldOpen: () => true,
+    dropdownShouldOpen: () => true,
     withPopper(dropdownList, component, { width }) {
       dropdownList.style.width = width;
       const popper = createPopper(component.$refs.toggle, dropdownList, {
@@ -58,6 +65,29 @@ export default {
       return () => popper.destroy();
     },
   },
+  watch: {
+    showCurrentAnswer() {
+      if (this.optionsData.currentAnswerId.length > 0) {
+        const currentTextValues = this.optionsListForSelect
+          .filter((item) => {
+            if (this.optionsData.currentAnswerId.includes(item.id)) {
+              return item;
+            }
+          })
+          .map((item) => item.label.toLowerCase());
+
+        const selectedOption = document.querySelectorAll(".vs__selected");
+        selectedOption.forEach((item) => {
+          const selectedOptionText = item.textContent.toLowerCase();
+          if (currentTextValues.includes(selectedOptionText)) {
+            item.classList.add("correct");
+          } else {
+            item.classList.add("uncorrect");
+          }
+        });
+      }
+    },
+  },
   mounted() {
     this.optionsListForSelect = this.optionsData.optionsList.reduce(
       (acc, item) => {
@@ -73,6 +103,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss">
 .multi-select {
   .vs__selected-options {
@@ -87,6 +118,20 @@ export default {
       align-items: center;
       font-size: 16px !important;
       margin-right: 4px;
+      &.correct {
+        padding: 4px 12px !important;
+        background-color: rgba(52, 223, 52, 0.3) !important;
+        .vs__deselect {
+          display: none;
+        }
+      }
+      &.uncorrect {
+        padding: 4px 12px !important;
+        background-color: rgba(255, 0, 0, 0.3) !important;
+        .vs__deselect {
+          display: none;
+        }
+      }
     }
     .vs__deselect {
       margin-left: 6px !important;

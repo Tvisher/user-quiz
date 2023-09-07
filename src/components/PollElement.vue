@@ -10,9 +10,7 @@
       :pollItemType="pollItemType"
       :pollItemData="pollItemData"
     />
-    <button class="btn app-btn sub-btn" @click="$emit('nextQuestion')">
-      Ответить
-    </button>
+    <slot> </slot>
   </div>
 </template>
 
