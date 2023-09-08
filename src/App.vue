@@ -24,9 +24,15 @@
               :pollsLength="quizQuestionsList.length"
               @nextQuestion="nextQuestion"
             >
-              <button class="btn app-btn sub-btn" @click="nextQuestion">
-                {{ nextBtnText }}
-              </button>
+              <transition mode="out-in" name="btn-fade">
+                <button
+                  v-bind:key="nextBtnText"
+                  class="btn app-btn sub-btn"
+                  @click="nextQuestion"
+                >
+                  {{ nextBtnText }}
+                </button>
+              </transition>
             </app-poll-element>
           </transition>
         </div>
@@ -67,14 +73,11 @@ export default {
     quizQuestionsListLength() {
       return this.quizQuestionsList.length;
     },
+
     hasQuizBg() {
       return this.appSettings.appQuizBg.path;
-      // if (this.appSettings.appQuizBg.path) {
-      //   return { backgroundImage: `url(${this.appSettings.appQuizBg.path})` };
-      // } else {
-      //   return { backgroundImage: "none" };
-      // }
     },
+
     quizQuestion() {
       return this.quizQuestionsList[this.answerNumber];
     },
@@ -165,6 +168,8 @@ export default {
   }
 }
 .quiz-block {
+  position: relative;
+  z-index: 2;
   opacity: 0;
   transition: opacity 0.7s ease-in-out 1.5s;
   max-width: 790px;
