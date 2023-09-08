@@ -1,46 +1,42 @@
 <template>
-  <div class="poll-app quiz-app" :style="quizBg">
-    <div class="quiz-block">
-      <app-start-page
-        v-if="startPage"
-        :appSettings="appSettings"
-        @startQuiz="startQuiz"
-      />
-      <div v-else class="poll-items">
-        <!-- <app-poll-element
-          v-show="answerNumber == index + 1"
-          v-for="(quizQuestion, index) in quizQuestionsList"
-          :pollItemId="quizQuestion.id"
-          :pollItemType="quizQuestion.type"
-          :pollItemDescr="quizQuestion.typeDescr"
-          :pollItemName="quizQuestion.typeName"
-          :pollItemData="quizQuestion.data"
-          :key="quizQuestion.id"
-          :pollNumber="index"
-          :pollsLength="quizQuestionsList.length"
-          @nextQuestion="nextQuestion"
-        /> -->
-        <app-poll-element
-          :pollItemId="quizQuestion.id"
-          :pollItemType="quizQuestion.type"
-          :pollItemDescr="quizQuestion.typeDescr"
-          :pollItemName="quizQuestion.typeName"
-          :pollItemData="quizQuestion.data"
-          :pollNumber="answerNumber"
-          :pollsLength="quizQuestionsList.length"
-          @nextQuestion="nextQuestion"
-        >
-          <button class="btn app-btn sub-btn" @click="nextQuestion">
-            {{ nextBtnText }}
-          </button>
-        </app-poll-element>
+  <div class="quiz-page" :class="{ 'screen-loaded': screenLoaded }">
+    <div class="poll-app quiz-app">
+      <div class="quiz-app-bg" v-if="hasQuizBg">
+        <img :src="appSettings.appQuizBg.path" alt="quiz-bg" />
+      </div>
+      <div class="quiz-block">
+        <app-start-page
+          v-if="startPage"
+          :appSettings="appSettings"
+          @startQuiz="startQuiz"
+        />
+
+        <div v-if="!startPage" class="poll-items">
+          <transition mode="out-in" name="low-fade">
+            <app-poll-element
+              v-bind:key="answerNumber"
+              :pollItemId="quizQuestion.id"
+              :pollItemType="quizQuestion.type"
+              :pollItemDescr="quizQuestion.typeDescr"
+              :pollItemName="quizQuestion.typeName"
+              :pollItemData="quizQuestion.data"
+              :pollNumber="answerNumber"
+              :pollsLength="quizQuestionsList.length"
+              @nextQuestion="nextQuestion"
+            >
+              <button class="btn app-btn sub-btn" @click="nextQuestion">
+                {{ nextBtnText }}
+              </button>
+            </app-poll-element>
+          </transition>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="quiz-app__footer">
-    <div class="quiz-app__footer-content">
-      <div class="quiz-app__footer-text">Создано в</div>
-      <div class="quiz-app__footer-logo"></div>
+    <div class="quiz-app__footer">
+      <div class="quiz-app__footer-content">
+        <div class="quiz-app__footer-text">Создано в</div>
+        <div class="quiz-app__footer-logo"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -59,6 +55,7 @@ export default {
     return {
       answerNumber: 0,
       startPage: true,
+      screenLoaded: false,
     };
   },
   computed: {
@@ -70,12 +67,13 @@ export default {
     quizQuestionsListLength() {
       return this.quizQuestionsList.length;
     },
-    quizBg() {
-      if (this.appSettings.appQuizBg.path) {
-        return { backgroundImage: `url(${this.appSettings.appQuizBg.path})` };
-      } else {
-        return { backgroundImage: "none" };
-      }
+    hasQuizBg() {
+      return this.appSettings.appQuizBg.path;
+      // if (this.appSettings.appQuizBg.path) {
+      //   return { backgroundImage: `url(${this.appSettings.appQuizBg.path})` };
+      // } else {
+      //   return { backgroundImage: "none" };
+      // }
     },
     quizQuestion() {
       return this.quizQuestionsList[this.answerNumber];
@@ -105,6 +103,10 @@ export default {
   },
   beforeMount() {
     this.$store.dispatch("getAppDataFromServer");
+    window.addEventListener("load", () => {
+      console.log("page-load");
+      this.screenLoaded = true;
+    });
   },
 };
 </script>
@@ -113,21 +115,58 @@ export default {
 #app {
   padding: 0 !important;
 }
+.quiz-page {
+  background-color: #ecf4ff;
+  &.screen-loaded {
+    .quiz-app-bg {
+      opacity: 1;
+      filter: blur(0px);
+      transform: scale(1);
+    }
+    .quiz-app__footer {
+      opacity: 1;
+    }
+    .quiz-block {
+      opacity: 1;
+    }
+  }
+}
 .quiz-app {
+  overflow: hidden;
   min-height: calc(100vh - 120px);
   padding: 50px;
   width: 100%;
-  background-color: #ecf4ff;
   height: 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  .quiz-app-bg {
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: 0;
+    transform: scale(1.3);
+    filter: blur(40px);
+    transition: opacity 0.8s ease-in-out, filter 1s ease-in-out,
+      transform 1.5s ease-in-out;
+  }
 }
 .quiz-block {
+  opacity: 0;
+  transition: opacity 0.7s ease-in-out 1.5s;
   max-width: 790px;
   width: 100%;
   margin: auto;
@@ -137,6 +176,8 @@ export default {
 }
 
 .quiz-app__footer {
+  transition: opacity 0.8s ease-in-out;
+  opacity: 0;
   background: #333;
   color: #888;
   font-size: 20px;

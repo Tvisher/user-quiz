@@ -15,6 +15,9 @@
           class="rangin-visual__item"
           v-for="(variant, index) in optionsList"
           :key="variant.id"
+          :class="{
+            correct: showCurrentAnswer && correctOrderId[index] == variant.id,
+          }"
         >
           <div class="rangin-visual__content">
             <div class="rangin-visual__dragg">
@@ -107,6 +110,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 import { VueDraggableNext } from "vue-draggable-next";
 
 export default {
@@ -124,6 +129,9 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      showCurrentAnswer: (state) => state.showCurrentAnswer,
+    }),
     pollItemsDragOptionsInSidebar() {
       return {
         animation: 200,
@@ -139,6 +147,9 @@ export default {
       return this.optionsList.every(
         (item, i) => item.id == this.optionsData.optionsList[i].id
       );
+    },
+    correctOrderId() {
+      return this.optionsData.optionsList.map((item) => item.id);
     },
   },
   methods: {
@@ -209,6 +220,9 @@ export default {
 }
 
 .rangin-visual__item {
+  &.correct {
+    background-color: rgba(0, 128, 0, 0.198);
+  }
   display: flex;
   align-items: center;
   background-color: #fff;
@@ -218,7 +232,6 @@ export default {
   line-height: 140%; /* 25.2px */
   margin-bottom: 5px;
   border-radius: 4px;
-
   position: relative;
   width: 100%;
   border: 1px solid rgba(0, 66, 105, 0.28);

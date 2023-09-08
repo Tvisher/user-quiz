@@ -147,4 +147,7 @@ export default {
     }
   }
 }
+.vs__dropdown-toggle {
+  min-height: 53px;
+}
 </style>

@@ -2,7 +2,10 @@
   <div class="multiple-choise-visual">
     <label
       class="single-choise-visual__label"
-      :class="{ checked: checkedInputs.includes(option.id) }"
+      :class="{
+        checked: checkedInputs.includes(option.id),
+        correct: correctAnswerId.includes(option.id),
+      }"
       v-for="option in optionsData.optionsList"
       :key="option.id"
     >
@@ -18,6 +21,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   props: {
     optionsData: Object,
@@ -27,6 +32,24 @@ export default {
     return {
       checkedInputs: [],
     };
+  },
+  computed: {
+    ...mapState({
+      showCurrentAnswer: (state) => state.showCurrentAnswer,
+    }),
+    hasCorrectAnswer() {
+      return (
+        this.optionsData.currentAnswerId.length > 0 &&
+        this.showCurrentAnswer === true
+      );
+    },
+    correctAnswerId() {
+      if (this.hasCorrectAnswer) {
+        return this.optionsData.currentAnswerId;
+      } else {
+        return [];
+      }
+    },
   },
   methods: {
     getChecket(event, inputId) {
@@ -58,5 +81,9 @@ export default {
   .single-choise-visual__input:checked
   + .single-choise-visual__text:before {
   background-color: var(--app-color);
+}
+
+.single-choise-visual__label.correct {
+  background-color: rgba(0, 128, 0, 0.198);
 }
 </style>

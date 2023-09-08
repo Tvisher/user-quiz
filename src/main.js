@@ -3,6 +3,8 @@ import App from './App.vue'
 import store from './store'
 
 import "./assets/scss/style.scss";
+import "./assets/scss/quiz-style.scss";
+
 import vSelect from 'vue-select';
 
 vSelect.props.components.default = () => ({
