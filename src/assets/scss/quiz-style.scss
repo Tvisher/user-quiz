@@ -17,7 +17,7 @@
 
 .btn-fade-enter-active,
 .btn-fade-leave-active {
-  transition: opacity 0.5s ease-in-out, transform 0.4s ease-in-out;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .btn-fade-enter-from,
@@ -31,3 +31,14 @@
 .btn-fade-leave-to {
   transform: translateY(-10px);
 }
+
+// .low-fade-delay-enter-active {
+//   transition: opacity 0.5s ease-in-out 0.8s, transform 0.4s ease-in-out 0.8s;
+// }
+// .low-fade-delay-leave-active {
+//   transition: opacity 0.5s ease-in-out, transform 0.4s ease-in-out;
+// }
+// .low-fade-delay-enter-from,
+// .low-fade-delay-leave-to {
+//   opacity: 0;
+// }

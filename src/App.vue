@@ -10,8 +10,7 @@
           :appSettings="appSettings"
           @startQuiz="startQuiz"
         />
-
-        <div v-if="!startPage" class="poll-items">
+        <div v-if="showQuizAnswers" class="poll-items">
           <transition mode="out-in" name="low-fade">
             <app-poll-element
               v-bind:key="answerNumber"
@@ -36,6 +35,7 @@
             </app-poll-element>
           </transition>
         </div>
+        <app-end-page v-if="endPage" :appSettings="appSettings" />
       </div>
     </div>
     <div class="quiz-app__footer">
@@ -51,16 +51,19 @@
 import { mapMutations, mapState } from "vuex";
 import AppPollElement from "./components/PollElement.vue";
 import AppStartPage from "./components/StartPage.vue";
+import AppEndPage from "./components/EndPage.vue";
 export default {
   components: {
     AppPollElement,
     AppStartPage,
+    AppEndPage,
   },
   name: "App",
   data() {
     return {
       answerNumber: 0,
       startPage: true,
+      endPage: false,
       screenLoaded: false,
     };
   },
@@ -73,7 +76,9 @@ export default {
     quizQuestionsListLength() {
       return this.quizQuestionsList.length;
     },
-
+    showQuizAnswers() {
+      return !this.startPage && !this.endPage;
+    },
     hasQuizBg() {
       return this.appSettings.appQuizBg.path;
     },
@@ -101,6 +106,9 @@ export default {
         } else {
           this.toggleShowCurrentAnswer();
         }
+      }
+      if (this.answerNumber == this.quizQuestionsListLength - 1) {
+        this.endPage = true;
       }
     },
   },
