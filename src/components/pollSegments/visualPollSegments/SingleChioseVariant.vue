@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   props: {
@@ -49,8 +49,13 @@ export default {
   },
 
   methods: {
+    ...mapMutations(["setUserAnswer"]),
     getChecket(inputId) {
       this.checkedInputId = inputId;
+      this.setUserAnswer({
+        questionId: this.pollItemId,
+        userAnswer: inputId,
+      });
     },
   },
 };

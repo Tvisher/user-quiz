@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   props: {
@@ -52,6 +52,8 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(["setUserAnswer"]),
+
     getChecket(event, inputId) {
       const isChecked = event.target.checked;
       if (isChecked) {
@@ -59,6 +61,10 @@ export default {
       } else {
         this.checkedInputs = this.checkedInputs.filter((id) => id !== inputId);
       }
+      this.setUserAnswer({
+        questionId: this.pollItemId,
+        userAnswer: [...this.checkedInputs],
+      });
     },
   },
 };

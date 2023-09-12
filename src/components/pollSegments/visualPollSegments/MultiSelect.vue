@@ -16,7 +16,7 @@
 
 <script>
 import { createPopper } from "@popperjs/core";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   data() {
@@ -37,7 +37,7 @@ export default {
     }),
   },
   methods: {
-    dropdownShouldOpen: () => true,
+    // dropdownShouldOpen: () => true,
     withPopper(dropdownList, component, { width }) {
       dropdownList.style.width = width;
       const popper = createPopper(component.$refs.toggle, dropdownList, {
@@ -64,6 +64,7 @@ export default {
       });
       return () => popper.destroy();
     },
+    ...mapMutations(["setUserAnswer"]),
   },
   watch: {
     showCurrentAnswer() {
@@ -86,6 +87,12 @@ export default {
           }
         });
       }
+    },
+    selectedOptionId() {
+      this.setUserAnswer({
+        questionId: this.pollItemId,
+        userAnswer: [...this.selectedOptionId],
+      });
     },
   },
   mounted() {

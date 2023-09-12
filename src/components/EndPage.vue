@@ -63,10 +63,6 @@
           >Пройти викторину повторно</a
         >
       </div>
-
-      <div class="quiz-end-btn">
-        <a href="#" class="btn app-btn">Завершить викторину</a>
-      </div>
     </div>
   </div>
 </template>

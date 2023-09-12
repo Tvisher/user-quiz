@@ -26,10 +26,10 @@
 }
 
 .btn-fade-enter-from {
-  transform: translateY(10px);
+  transform: translateX(10px);
 }
 .btn-fade-leave-to {
-  transform: translateY(-10px);
+  transform: translateX(-10px);
 }
 
 // .low-fade-delay-enter-active {
@@ -42,3 +42,8 @@
 // .low-fade-delay-leave-to {
 //   opacity: 0;
 // }
+
+.poll-item {
+  display: flex;
+  flex-direction: column;
+}

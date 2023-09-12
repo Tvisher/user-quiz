@@ -13,6 +13,7 @@
       <img
         :src="pollItemData.pollImage.path"
         :alt="pollItemData.pollImage.name"
+        @load="imageLoaded"
       />
     </div>
     <app-text-from-editor :editorValue="pollItemData.editorValue" />
@@ -39,21 +40,12 @@
       :pollItemId="pollItemId"
     />
 
-    <app-range-slider
-      v-if="pollItemType === 'range-selection'"
-      :rangeData="pollItemData.rangeData"
-      :pollItemId="pollItemId"
-    />
-
     <app-ranging-visual
       v-if="pollItemType === 'ranging'"
       :optionsData="pollItemData.optionsData"
       :pollItemId="pollItemId"
     />
-    <app-datapicker-visual
-      v-if="pollItemType === 'date'"
-      :dateData="pollItemData.dateData"
-    />
+
     <app-custom-fields-visual
       v-if="pollItemType === 'custom-fields'"
       :optionsData="pollItemData.optionsData"
@@ -70,10 +62,7 @@ import AppSingleChoiseVariant from "./visualPollSegments/SingleChioseVariant.vue
 import AppMultiChoiseVariant from "./visualPollSegments/MultiChioseVariant.vue";
 import AppSingleSelect from "./visualPollSegments/SingleSelect.vue";
 import AppMultiSelect from "./visualPollSegments/MultiSelect.vue";
-import AppRangeSlider from "./visualPollSegments/RangeSlider.vue";
-import AppPairRankingVisual from "./visualPollSegments/PairRankingVisual.vue";
 import AppRangingVisual from "./visualPollSegments/RangingVisual.vue";
-import AppDatapickerVisual from "./visualPollSegments/DatapickerVisual.vue";
 import AppCustomFieldsVisual from "./visualPollSegments/CustomFieldsVisual.vue";
 export default {
   components: {
@@ -82,10 +71,7 @@ export default {
     AppMultiChoiseVariant,
     AppSingleSelect,
     AppMultiSelect,
-    AppRangeSlider,
-    AppPairRankingVisual,
     AppRangingVisual,
-    AppDatapickerVisual,
     AppCustomFieldsVisual,
   },
   props: {
@@ -108,6 +94,11 @@ export default {
     },
     viewOnly() {
       return this.showCurrentAnswer === true;
+    },
+  },
+  methods: {
+    imageLoaded(e) {
+      console.log("image loaded");
     },
   },
 };

@@ -1,5 +1,9 @@
 <template>
-  <div class="quiz-page" :class="{ 'screen-loaded': screenLoaded }">
+  <div
+    class="quiz-page"
+    :class="{ 'screen-loaded': screenLoaded }"
+    v-if="appLoaded"
+  >
     <div class="poll-app quiz-app">
       <div class="quiz-app-bg" v-if="hasQuizBg">
         <img :src="appSettings.appQuizBg.path" alt="quiz-bg" />
@@ -23,15 +27,18 @@
               :pollsLength="quizQuestionsList.length"
               @nextQuestion="nextQuestion"
             >
-              <transition mode="out-in" name="btn-fade">
-                <button
-                  v-bind:key="nextBtnText"
-                  class="btn app-btn sub-btn"
-                  @click="nextQuestion"
-                >
-                  {{ nextBtnText }}
-                </button>
-              </transition>
+              <div class="sub-btn__wrap">
+                <transition mode="out-in" name="btn-fade">
+                  <button
+                    v-if="userReplied"
+                    v-bind:key="nextBtnText"
+                    class="btn app-btn sub-btn"
+                    @click="nextQuestion"
+                  >
+                    {{ nextBtnText }}
+                  </button>
+                </transition>
+              </div>
             </app-poll-element>
           </transition>
         </div>
@@ -44,11 +51,14 @@
         <div class="quiz-app__footer-logo"></div>
       </div>
     </div>
+    <pre>
+      {{ questionHasCorrectAnswer }}
+    </pre>
   </div>
 </template>
 
 <script>
-import { mapMutations, mapState } from "vuex";
+import { mapMutations, mapState, mapGetters } from "vuex";
 import AppPollElement from "./components/PollElement.vue";
 import AppStartPage from "./components/StartPage.vue";
 import AppEndPage from "./components/EndPage.vue";
@@ -65,14 +75,18 @@ export default {
       startPage: true,
       endPage: false,
       screenLoaded: false,
+      nextBtnText: "",
     };
   },
   computed: {
     ...mapState({
+      appLoaded: (state) => state.appLoaded,
       quizQuestionsList: (state) => state.quizQuestionsList,
       appSettings: (state) => state.appSettings,
       showCurrentAnswer: (state) => state.showCurrentAnswer,
+      userAnswers: (state) => state.userAnswers,
     }),
+    ...mapGetters(["questionHasUserAnswer"]),
     quizQuestionsListLength() {
       return this.quizQuestionsList.length;
     },
@@ -87,8 +101,13 @@ export default {
       return this.quizQuestionsList[this.answerNumber];
     },
 
-    nextBtnText() {
-      return this.showCurrentAnswer === true ? "Далее" : "Ответить";
+    userReplied() {
+      return (
+        this.questionHasUserAnswer(this.answerNumber).userAnswer.length > 0
+      );
+    },
+    questionHasCorrectAnswer() {
+      return this.userAnswers[this.answerNumber].correctAnswer.length > 0;
     },
   },
   methods: {
@@ -99,6 +118,10 @@ export default {
     },
     nextQuestion() {
       if (this.answerNumber < this.quizQuestionsListLength - 1) {
+        if (!this.questionHasCorrectAnswer) {
+          this.answerNumber++;
+          return;
+        }
         if (this.showCurrentAnswer === true) {
           this.toggleShowCurrentAnswer();
           this.answerNumber++;
@@ -112,7 +135,28 @@ export default {
       }
     },
   },
-  beforeMount() {
+  watch: {
+    showCurrentAnswer() {
+      if (this.showCurrentAnswer === true) {
+        this.nextBtnText = "Далее";
+      } else {
+        this.nextBtnText = "Ответить";
+      }
+    },
+    appLoaded() {
+      if (this.questionHasCorrectAnswer) {
+        this.nextBtnText = "Ответить";
+      } else {
+        this.nextBtnText = "Далее";
+      }
+    },
+    answerNumber() {
+      if (!this.questionHasCorrectAnswer) {
+        this.nextBtnText = "Далее";
+      }
+    },
+  },
+  beforeCreate() {
     this.$store.dispatch("getAppDataFromServer");
     window.addEventListener("load", () => {
       console.log("page-load");
@@ -129,7 +173,7 @@ export default {
 .quiz-page {
   background-color: #ecf4ff;
   &.screen-loaded {
-    .quiz-app-bg {
+    .quiz-app-bg img {
       opacity: 1;
       filter: blur(0px);
       transform: scale(1);
@@ -143,7 +187,6 @@ export default {
   }
 }
 .quiz-app {
-  overflow: hidden;
   min-height: calc(100vh - 120px);
   padding: 50px;
   width: 100%;
@@ -158,21 +201,18 @@ export default {
       height: 100%;
       object-fit: cover;
       object-position: center;
+      opacity: 0;
+      transform: scale(1.3);
+      filter: blur(40px);
+      transition: opacity 0.8s ease-in-out, filter 1s ease-in-out,
+        transform 1.5s ease-in-out;
     }
     position: absolute;
+    overflow: hidden;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    opacity: 0;
-    transform: scale(1.3);
-    filter: blur(40px);
-    transition: opacity 0.8s ease-in-out, filter 1s ease-in-out,
-      transform 1.5s ease-in-out;
   }
 }
 .quiz-block {
@@ -189,6 +229,8 @@ export default {
 }
 
 .quiz-app__footer {
+  z-index: 3;
+  position: relative;
   transition: opacity 0.8s ease-in-out;
   opacity: 0;
   background: #333;
@@ -220,5 +262,15 @@ export default {
 .btn {
   font-size: 18px !important;
   font-weight: 400 !important;
+}
+
+.sub-btn__wrap {
+  height: 50px;
+  display: flex;
+  margin-top: 20px;
+  .sub-btn {
+    margin: 0;
+    margin-left: auto;
+  }
 }
 </style>

@@ -17,6 +17,7 @@
           :key="variant.id"
           :class="{
             correct: showCurrentAnswer && correctOrderId[index] == variant.id,
+            wrong: showCurrentAnswer && correctOrderId[index] != variant.id,
           }"
         >
           <div class="rangin-visual__content">
@@ -110,7 +111,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 import { VueDraggableNext } from "vue-draggable-next";
 
@@ -153,6 +154,8 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(["setUserAnswer"]),
+
     rangeVariant(index, type) {
       let nextIndex;
       if (type == "bottom") {
@@ -177,6 +180,18 @@ export default {
       swapElements(this.optionsList, index, nextIndex);
     },
   },
+  watch: {
+    optionsList(newValue, oldValue) {
+      if (oldValue.length > 0) {
+        const answersIdList = newValue.map((item) => item.id);
+        this.setUserAnswer({
+          questionId: this.pollItemId,
+          userAnswer: [...answersIdList],
+        });
+      }
+    },
+  },
+
   beforeMount() {
     const sortList = () => {
       this.optionsList = [...this.optionsData.optionsList].sort(
@@ -221,7 +236,10 @@ export default {
 
 .rangin-visual__item {
   &.correct {
-    background-color: rgba(0, 128, 0, 0.198);
+    background-color: rgba(0, 128, 0, 0.2);
+  }
+  &.wrong {
+    background-color: rgba(255, 0, 0, 0.3);
   }
   display: flex;
   align-items: center;

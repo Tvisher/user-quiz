@@ -1,7 +1,7 @@
 <template>
   <div
     class="custom-field-item"
-    v-for="(field, index) in customFilds"
+    v-for="(field, index) in customFields"
     :key="field.id"
   >
     <span class="editor-descr">{{ field.value || `Поле № ${index + 1}` }}</span>
@@ -45,6 +45,7 @@
 
 <script>
 import { IMaskDirective } from "vue-imask";
+import { mapMutations } from "vuex";
 
 function validateEmail(email) {
   const re =
@@ -62,7 +63,7 @@ export default {
   },
   data() {
     return {
-      customFilds: [],
+      customFields: [],
       phoneMask: {
         mask: "+{7}(000)000-00-00",
         lazy: false,
@@ -74,8 +75,8 @@ export default {
   },
   methods: {
     onAcceptPhone(e, id) {
-      const currentField = this.customFilds.find((field) => field.id === id);
-      const phoneNumber = e.detail.value;
+      const currentField = this.customFields.find((field) => field.id === id);
+      const phoneNumber = e.detail.value.trim();
       currentField.answer = phoneNumber;
       const phoneNumberOnlyNums = String(phoneNumber).replace(/[^0-9]/g, "");
       phoneNumberOnlyNums.length < 11
@@ -83,8 +84,8 @@ export default {
         : (currentField.filled = true);
     },
     emailCheck(e, id) {
-      const emailValue = e.target.value;
-      const currentField = this.customFilds.find((field) => field.id === id);
+      const emailValue = e.target.value.trim();
+      const currentField = this.customFields.find((field) => field.id === id);
       currentField.answer = emailValue;
       validateEmail(emailValue)
         ? (currentField.filled = true)
@@ -92,16 +93,17 @@ export default {
     },
 
     textFieldCheck(e, id) {
-      const textValue = e.target.value;
-      const currentField = this.customFilds.find((field) => field.id === id);
+      const textValue = e.target.value.trim();
+      const currentField = this.customFields.find((field) => field.id === id);
       currentField.answer = textValue;
       textValue.length > 0
         ? (currentField.filled = true)
         : (currentField.filled = false);
     },
+    ...mapMutations(["setUserAnswer"]),
   },
   beforeMount() {
-    this.customFilds = this.optionsData.optionsList.map((item) => {
+    this.customFields = this.optionsData.optionsList.map((item) => {
       return {
         id: item.id,
         type: item.type,
@@ -110,6 +112,27 @@ export default {
         filled: false,
       };
     });
+  },
+  watch: {
+    customFields: {
+      handler() {
+        const allFieldsValid = this.customFields
+          .map((item) => item.filled)
+          .every((item) => item === true);
+        if (allFieldsValid) {
+          this.setUserAnswer({
+            questionId: this.pollItemId,
+            userAnswer: [...this.customFields],
+          });
+        } else {
+          this.setUserAnswer({
+            questionId: this.pollItemId,
+            userAnswer: [],
+          });
+        }
+      },
+      deep: true,
+    },
   },
 };
 </script>

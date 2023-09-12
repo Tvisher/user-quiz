@@ -14,7 +14,7 @@
 
 <script>
 import { createPopper } from "@popperjs/core";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   data() {
@@ -73,10 +73,15 @@ export default {
       });
       return () => popper.destroy();
     },
+    ...mapMutations(["setUserAnswer"]),
   },
   watch: {
     selectedOptionId() {
-      console.log(this.selectedOptionId);
+      const userAnswer = this.selectedOptionId ? this.selectedOptionId : [];
+      this.setUserAnswer({
+        questionId: this.pollItemId,
+        userAnswer,
+      });
     },
   },
   mounted() {
