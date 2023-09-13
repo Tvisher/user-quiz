@@ -1,6 +1,6 @@
 <template>
   <div class="quiz-end">
-    <div class="quiz-end-precent">
+    <div class="quiz-end-precent" v-if="appHasCurrentAnswers">
       <div class="quiz-end-precent__img">
         <svg
           width="204"
@@ -43,8 +43,7 @@
             </linearGradient>
           </defs>
         </svg>
-
-        <div class="quiz-end-precent__value">0%</div>
+        <div class="quiz-end-precent__value">{{ truePrecentValue }}%</div>
       </div>
       <div class="quiz-end-precent__title">Правильных ответов</div>
     </div>
@@ -68,26 +67,90 @@
 </template>
 
 <script>
+function checkMultiVatiants(userAnswer, correctAnswer) {
+  const matchingElements = userAnswer.filter((item) =>
+    correctAnswer.includes(item)
+  );
+  return matchingElements.length > correctAnswer.length / 2;
+}
+
+function checkRanginVariant(userAnswer, correctAnswer) {
+  const minLength = Math.min(userAnswer.length, correctAnswer.length);
+  const matchingIndexes = userAnswer
+    .slice(0, minLength)
+    .filter((el, idx) => el === correctAnswer[idx]);
+  return matchingIndexes.length > minLength / 2;
+}
+
+function calculateTruePercentage(booleanArray) {
+  const trueCount = booleanArray.reduce((count, value) => count + +value, 0);
+  const totalElements = booleanArray.length;
+  return Math.round((trueCount / totalElements) * 100);
+}
+
+import { mapState } from "vuex";
+
 export default {
   props: {
     appSettings: { type: Object },
   },
   computed: {
+    ...mapState({
+      userAnswers: (state) => state.userAnswers,
+    }),
     isHasAppFinalMessage() {
       return this.appSettings.appFinalMessage.trim() != "";
     },
-
     isHasCustomLink() {
       return this.appSettings.customFinishLink.enable;
     },
     customFinishLinkUrl() {
-      return this.appSettings.customFinishLink.linkUrl;
+      return this.appSettings.customFinishLink.data.linkUrl;
     },
     customFinishLinkText() {
-      return this.appSettings.customFinishLink.linkText;
+      return this.appSettings.customFinishLink.data.linkText;
     },
+
     takeTheQuizagain() {
       return this.appSettings.takeTheQuizagain;
+    },
+    appHasCurrentAnswers() {
+      return (
+        this.userAnswers.filter(
+          (item) =>
+            item.hasOwnProperty("correctAnswer") &&
+            item.correctAnswer.length > 0
+        ).length > 0
+      );
+    },
+
+    truePrecentValue() {
+      const res = this.userAnswers
+        .filter(
+          (item) =>
+            item.hasOwnProperty("correctAnswer") &&
+            item.correctAnswer.length > 0
+        )
+        .map((item) => {
+          if (
+            item.questionType == "single-choice" ||
+            item.questionType == "drop-down-list"
+          ) {
+            return item.userAnswer[0] == item.correctAnswer[0];
+          }
+          if (
+            item.questionType == "multiple-drop-down-list" ||
+            item.questionType == "multiple-choice"
+          ) {
+            return checkMultiVatiants(item.userAnswer, item.correctAnswer);
+          }
+
+          if (item.questionType == "ranging") {
+            return checkRanginVariant(item.userAnswer, item.correctAnswer);
+          }
+        });
+
+      return calculateTruePercentage(res);
     },
   },
   methods: {

@@ -51,9 +51,6 @@
         <div class="quiz-app__footer-logo"></div>
       </div>
     </div>
-    <pre>
-      {{ questionHasCorrectAnswer }}
-    </pre>
   </div>
 </template>
 
@@ -62,6 +59,7 @@ import { mapMutations, mapState, mapGetters } from "vuex";
 import AppPollElement from "./components/PollElement.vue";
 import AppStartPage from "./components/StartPage.vue";
 import AppEndPage from "./components/EndPage.vue";
+
 export default {
   components: {
     AppPollElement,
@@ -151,7 +149,9 @@ export default {
       }
     },
     answerNumber() {
-      if (!this.questionHasCorrectAnswer) {
+      if (this.questionHasCorrectAnswer) {
+        this.nextBtnText = "Ответить";
+      } else {
         this.nextBtnText = "Далее";
       }
     },
@@ -160,7 +160,9 @@ export default {
     this.$store.dispatch("getAppDataFromServer");
     window.addEventListener("load", () => {
       console.log("page-load");
-      this.screenLoaded = true;
+      setTimeout(() => {
+        this.screenLoaded = true;
+      }, 200);
     });
   },
 };
