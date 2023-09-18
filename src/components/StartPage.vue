@@ -8,7 +8,7 @@
     </div>
     <div class="quiz-start__descr">{{ appDescription }}</div>
     <div class="quiz-start-btn__wrapper">
-      <button class="btn quiz-start-btn app-btn" @click="$emit('startQuiz')">
+      <button class="btn quiz-start-btn app-btn" @click="startQuiz">
         Пройти Викторину
       </button>
     </div>
@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   props: {
     appSettings: { type: Object },
@@ -47,6 +49,33 @@ export default {
 
     appDescription() {
       return this.appSettings.appDescription;
+    },
+  },
+  methods: {
+    startQuiz() {
+      this.$store.commit("setStartTime");
+      this.$emit("startQuiz");
+      const quizID = document.querySelector("#app").dataset.pollId;
+      const userID = document.querySelector("#app").dataset.user;
+      axios
+        .post(
+          "/bitrix/templates/quiz/startitem.php",
+          {
+            id: quizID,
+            user: userID,
+          },
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        )
+        .then(function (response) {
+          console.log("Начало прохождения викторины!");
+        })
+        .catch(function (error) {
+          console.log("Ошибка:", error);
+        });
     },
   },
 };

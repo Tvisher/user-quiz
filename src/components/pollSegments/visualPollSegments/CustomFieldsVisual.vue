@@ -3,6 +3,7 @@
     class="custom-field-item"
     v-for="(field, index) in customFields"
     :key="field.id"
+    :class="{ 'error-field': !field.filled && getValidate }"
   >
     <span class="editor-descr">{{ field.value || `Поле № ${index + 1}` }}</span>
     <label class="variant-item__label" v-if="field.type === 'phone'">
@@ -11,7 +12,9 @@
         :value="field.answer"
         v-imask="phoneMask"
         @accept="onAcceptPhone($event, field.id)"
+        @focus="removeErr"
       />
+      <span class="err-mess">Необходимо запонить это поле</span>
     </label>
 
     <label class="variant-item__label" v-if="field.type === 'email'">
@@ -20,7 +23,9 @@
         :value="field.answer"
         :placeholder="emailPlaceholder"
         @input="emailCheck($event, field.id)"
+        @focus="removeErr"
       />
+      <span class="err-mess">Необходимо запонить это поле</span>
     </label>
 
     <label class="variant-item__label" v-if="field.type === 'text'">
@@ -29,7 +34,9 @@
         :value="field.answer"
         :placeholder="textFieldPlaceholder"
         @input="textFieldCheck($event, field.id)"
+        @focus="removeErr"
       />
+      <span class="err-mess">Необходимо запонить это поле</span>
     </label>
 
     <label class="variant-item__label" v-if="field.type === 'textarea'">
@@ -38,14 +45,16 @@
         :value="field.answer"
         :placeholder="textAreaPlaceholder"
         @input="textFieldCheck($event, field.id)"
+        @focus="removeErr"
       />
+      <span class="err-mess">Необходимо запонить это поле</span>
     </label>
   </div>
 </template>
 
 <script>
 import { IMaskDirective } from "vue-imask";
-import { mapMutations } from "vuex";
+import { mapMutations, mapState } from "vuex";
 
 function validateEmail(email) {
   const re =
@@ -73,7 +82,16 @@ export default {
       textAreaPlaceholder: "Сообщение",
     };
   },
+  computed: {
+    ...mapState(["getValidate"]),
+  },
   methods: {
+    removeErr(e) {
+      const errorField = e.target.closest(".error-field");
+      // if (errorField) {
+      //   errorField.classList.remove("error-field");
+      // }
+    },
     onAcceptPhone(e, id) {
       const currentField = this.customFields.find((field) => field.id === id);
       const phoneNumber = e.detail.value.trim();
@@ -100,7 +118,7 @@ export default {
         ? (currentField.filled = true)
         : (currentField.filled = false);
     },
-    ...mapMutations(["setUserAnswer"]),
+    ...mapMutations(["setUserAnswer", "setCustomFildsValid"]),
   },
   beforeMount() {
     this.customFields = this.optionsData.optionsList.map((item) => {
@@ -124,11 +142,13 @@ export default {
             questionId: this.pollItemId,
             userAnswer: [...this.customFields],
           });
+          this.setCustomFildsValid(true);
         } else {
           this.setUserAnswer({
             questionId: this.pollItemId,
             userAnswer: [],
           });
+          this.setCustomFildsValid(false);
         }
       },
       deep: true,
@@ -140,5 +160,30 @@ export default {
 <style lang="scss">
 .custom-field-item {
   margin-bottom: 15px;
+  .editor-descr {
+    display: block;
+    text-transform: inherit;
+  }
+}
+
+.error-field {
+  .editor-descr {
+    color: red;
+  }
+  .variant-item__filed {
+    border-color: red;
+    &::placeholder {
+      color: rgba(255, 0, 0, 0.5);
+    }
+    color: rgba(255, 0, 0, 0.5);
+  }
+  .err-mess {
+    display: block;
+  }
+}
+.err-mess {
+  font-size: 14px;
+  display: none;
+  color: red;
 }
 </style>

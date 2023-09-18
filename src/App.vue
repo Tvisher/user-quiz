@@ -1,56 +1,64 @@
 <template>
-  <div
-    class="quiz-page"
-    :class="{ 'screen-loaded': screenLoaded }"
-    v-if="appLoaded"
-  >
-    <div class="poll-app quiz-app">
-      <div class="quiz-app-bg" v-if="hasQuizBg">
-        <img :src="appSettings.appQuizBg.path" alt="quiz-bg" />
-      </div>
-      <div class="quiz-block">
-        <app-start-page
-          v-if="startPage"
-          :appSettings="appSettings"
-          @startQuiz="startQuiz"
-        />
-        <div v-if="showQuizAnswers" class="poll-items">
-          <transition mode="out-in" name="low-fade">
-            <app-poll-element
-              v-bind:key="answerNumber"
-              :pollItemId="quizQuestion.id"
-              :pollItemType="quizQuestion.type"
-              :pollItemDescr="quizQuestion.typeDescr"
-              :pollItemName="quizQuestion.typeName"
-              :pollItemData="quizQuestion.data"
-              :pollNumber="answerNumber"
-              :pollsLength="quizQuestionsList.length"
-              @nextQuestion="nextQuestion"
-            >
-              <div class="sub-btn__wrap">
-                <transition mode="out-in" name="btn-fade">
-                  <button
-                    v-if="userReplied"
-                    v-bind:key="nextBtnText"
-                    class="btn app-btn sub-btn"
-                    @click="nextQuestion"
-                  >
-                    {{ nextBtnText }}
-                  </button>
-                </transition>
-              </div>
-            </app-poll-element>
+  <div v-if="!pageHasProblems">
+    <div
+      class="quiz-page"
+      :class="{ 'screen-loaded': screenLoaded }"
+      v-if="appLoaded"
+    >
+      <div class="poll-app quiz-app">
+        <div class="quiz-app-bg" v-if="hasQuizBg">
+          <img :src="appSettings.appQuizBg.path" alt="quiz-bg" />
+        </div>
+        <div class="quiz-block">
+          <transition name="low-fade" mode="out-in">
+            <app-start-page
+              v-if="startPage"
+              :appSettings="appSettings"
+              @startQuiz="startQuiz"
+            />
+            <div v-else-if="showQuizAnswers" class="poll-items">
+              <transition mode="out-in" name="low-fade">
+                <app-poll-element
+                  v-bind:key="answerNumber"
+                  :pollItemId="quizQuestion.id"
+                  :pollItemType="quizQuestion.type"
+                  :pollItemDescr="quizQuestion.typeDescr"
+                  :pollItemName="quizQuestion.typeName"
+                  :pollItemData="quizQuestion.data"
+                  :pollNumber="answerNumber"
+                  :pollsLength="quizQuestionsList.length"
+                  @nextQuestion="nextQuestion"
+                >
+                  <div class="sub-btn__wrap">
+                    <transition mode="out-in" name="btn-fade">
+                      <button
+                        v-if="userReplied"
+                        v-bind:key="nextBtnText"
+                        class="btn app-btn sub-btn"
+                        @click="nextQuestion"
+                      >
+                        {{ nextBtnText }}
+                      </button>
+                    </transition>
+                  </div>
+                </app-poll-element>
+              </transition>
+            </div>
+            <app-end-page v-else-if="endPage" :appSettings="appSettings" />
           </transition>
         </div>
-        <app-end-page v-if="endPage" :appSettings="appSettings" />
+      </div>
+      <div class="quiz-app__footer">
+        <div class="quiz-app__footer-content">
+          <div class="quiz-app__footer-text">Создано в</div>
+          <div class="quiz-app__footer-logo"></div>
+        </div>
       </div>
     </div>
-    <div class="quiz-app__footer">
-      <div class="quiz-app__footer-content">
-        <div class="quiz-app__footer-text">Создано в</div>
-        <div class="quiz-app__footer-logo"></div>
-      </div>
-    </div>
+  </div>
+  <div v-else class="page-has-errors">
+    404<br />
+    Викторина имеет проблемы
   </div>
 </template>
 
@@ -74,6 +82,7 @@ export default {
       endPage: false,
       screenLoaded: false,
       nextBtnText: "",
+      pageHasProblems: false,
     };
   },
   computed: {
@@ -83,6 +92,7 @@ export default {
       appSettings: (state) => state.appSettings,
       showCurrentAnswer: (state) => state.showCurrentAnswer,
       userAnswers: (state) => state.userAnswers,
+      customFildsValid: (state) => state.customFildsValid,
     }),
     ...mapGetters(["questionHasUserAnswer"]),
     quizQuestionsListLength() {
@@ -101,20 +111,37 @@ export default {
 
     userReplied() {
       return (
-        this.questionHasUserAnswer(this.answerNumber).userAnswer.length > 0
+        this.questionHasUserAnswer(this.answerNumber).userAnswer.length > 0 ||
+        this.questionTypeIsCustomFields
       );
     },
     questionHasCorrectAnswer() {
       return this.userAnswers[this.answerNumber].correctAnswer.length > 0;
     },
+    questionTypeIsCustomFields() {
+      return this.quizQuestionsList[this.answerNumber].type === "custom-fields";
+    },
   },
   methods: {
-    ...mapMutations(["toggleShowCurrentAnswer"]),
+    ...mapMutations([
+      "toggleShowCurrentAnswer",
+      "setValidate",
+      "setCustomFildsValid",
+    ]),
 
     startQuiz() {
       this.startPage = false;
     },
     nextQuestion() {
+      if (!this.userReplied) return;
+      // Если кастомные поля, включаем валидацию при нажатии кнопки далее и не даём пройти дальше
+      if (!this.customFildsValid && this.questionTypeIsCustomFields) {
+        this.setValidate(true);
+        return;
+      } else {
+        this.setCustomFildsValid(false);
+        this.setValidate(false);
+      }
       if (this.answerNumber < this.quizQuestionsListLength - 1) {
         if (!this.questionHasCorrectAnswer) {
           this.answerNumber++;
@@ -129,7 +156,19 @@ export default {
         }
       }
       if (this.answerNumber == this.quizQuestionsListLength - 1) {
-        this.endPage = true;
+        if (!this.questionHasCorrectAnswer) {
+          this.$store.dispatch("setAppDataOnServer");
+          this.endPage = true;
+          return;
+        }
+        if (this.questionHasCorrectAnswer && this.showCurrentAnswer === false) {
+          this.toggleShowCurrentAnswer();
+          return;
+        }
+        if (this.questionHasCorrectAnswer && this.showCurrentAnswer === true) {
+          this.$store.dispatch("setAppDataOnServer");
+          this.endPage = true;
+        }
       }
     },
   },
@@ -157,7 +196,14 @@ export default {
     },
   },
   beforeCreate() {
-    this.$store.dispatch("getAppDataFromServer");
+    this.$store
+      .dispatch("getAppDataFromServer")
+      .then((res) => {})
+      .catch((error) => {
+        // this.pageHasProblems = true;
+        console.log("Ошибка:", error);
+      });
+
     window.addEventListener("load", () => {
       console.log("page-load");
       setTimeout(() => {
@@ -274,5 +320,19 @@ export default {
     margin: 0;
     margin-left: auto;
   }
+}
+
+.page-has-errors {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  font-weight: 700;
+  font-size: 50px;
 }
 </style>
