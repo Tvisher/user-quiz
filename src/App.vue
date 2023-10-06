@@ -57,8 +57,7 @@
     </div>
   </div>
   <div v-else class="page-has-errors">
-    404<br />
-    Викторина имеет проблемы
+    <app-not-found />
   </div>
 </template>
 
@@ -67,12 +66,14 @@ import { mapMutations, mapState, mapGetters } from "vuex";
 import AppPollElement from "./components/PollElement.vue";
 import AppStartPage from "./components/StartPage.vue";
 import AppEndPage from "./components/EndPage.vue";
+import AppNotFound from "./components/NotFound.vue";
 
 export default {
   components: {
     AppPollElement,
     AppStartPage,
     AppEndPage,
+    AppNotFound,
   },
   name: "App",
   data() {
@@ -200,7 +201,7 @@ export default {
       .dispatch("getAppDataFromServer")
       .then((res) => {})
       .catch((error) => {
-        // this.pageHasProblems = true;
+        this.pageHasProblems = true;
         console.log("Ошибка:", error);
       });
 

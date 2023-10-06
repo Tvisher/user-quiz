@@ -4,7 +4,11 @@
       class="single-choise-visual__label"
       :class="{
         checked: option.id === checkedInputId,
-        current: option.id === correctAnswerId,
+        correct: option.id === correctAnswerId,
+        uncorrect:
+          option.id !== correctAnswerId &&
+          showCurrentAnswer &&
+          hasCorrectAnswer,
       }"
       v-for="option in optionsData.optionsList"
       :key="option.id"
@@ -45,6 +49,9 @@ export default {
         return null;
       }
       return this.optionsData.currentAnswerId[0];
+    },
+    hasCorrectAnswer() {
+      return this.optionsData.currentAnswerId.length > 0;
     },
   },
 
@@ -156,9 +163,5 @@ export default {
       opacity: 1;
     }
   }
-}
-
-.single-choise-visual__label.current {
-  background-color: rgba(0, 128, 0, 0.198);
 }
 </style>
