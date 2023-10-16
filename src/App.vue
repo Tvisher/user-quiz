@@ -201,7 +201,9 @@ export default {
       .dispatch("getAppDataFromServer")
       .then((res) => {})
       .catch((error) => {
-        // this.pageHasProblems = true;
+        if (process.env.NODE_ENV !== "development") {
+          this.pageHasProblems = true;
+        }
         console.log("Ошибка:", error);
       });
 

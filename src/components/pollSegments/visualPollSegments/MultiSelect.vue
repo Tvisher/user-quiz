@@ -8,6 +8,7 @@
     v-model="selectedOptionId"
     :placeholder="placeholder"
     append-to-body
+    :searchable="false"
     :calculate-position="withPopper"
   >
     <template #no-options> Ничего не найдено </template>
