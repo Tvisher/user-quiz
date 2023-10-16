@@ -201,7 +201,7 @@ export default {
       .dispatch("getAppDataFromServer")
       .then((res) => {})
       .catch((error) => {
-        this.pageHasProblems = true;
+        // this.pageHasProblems = true;
         console.log("Ошибка:", error);
       });
 
