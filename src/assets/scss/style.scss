@@ -582,7 +582,11 @@ textarea.variant-item__filed {
 }
 
 .vs__search {
-  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100% !important;
+  height: 100%;
 }
 
 @import "./media";
