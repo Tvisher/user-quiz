@@ -75,7 +75,7 @@ export default createStore({
   actions: {
     getAppDataFromServer({ commit }) {
       return new Promise((resolve, reject) => {
-        axios.get('/bitrix/templates/quiz/itemjson.php', {
+        axios.get('/local/templates/quiz/itemjson.php', {
           params: {
             id: quizID,
             type: 'quiz',
@@ -110,7 +110,7 @@ export default createStore({
         const serverData = {};
         serverData.informationAboutPassage = JSON.parse(JSON.stringify(state.userAnswers));
         serverData.completionTimeInMilliseconds = new Date() - state.startTime;
-        axios.post('/bitrix/templates/quiz/resultjson.php',
+        axios.post('/local/templates/quiz/resultjson.php',
           {
             id: quizID,
             user: userID,
@@ -130,7 +130,9 @@ export default createStore({
             reject(error);
           });
       });
-    }
+    },
+
+
   }
 });
 
