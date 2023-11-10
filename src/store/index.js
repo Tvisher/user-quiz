@@ -4,9 +4,12 @@ import devJson from "./dev-api.js";
 
 const quizID = document.querySelector('#app').dataset.pollId;
 const userID = document.querySelector('#app').dataset.user;
-
+const isAdmin = document.querySelector('#app').dataset.asdmin ? true : false;
+console.log(isAdmin);
 export default createStore({
   state: {
+    isAdmin,
+    quizID,
     appLoaded: false,
     showCurrentAnswer: false,
     quizQuestionsList: [],

@@ -590,4 +590,8 @@ textarea.variant-item__filed {
   pointer-events: none;
 }
 
+.multi-select .vs__selected-options .vs__deselect {
+  flex-shrink: 0;
+}
+
 @import "./media";
