@@ -197,22 +197,28 @@ export default {
     },
   },
   beforeCreate() {
+    const checkAppComplite = () => {
+      const complitedPoll = localStorage.getItem(`${this.$store.state.quizID}`);
+      if (complitedPoll && !this.$store.state.appSettings.takeTheQuizagain) {
+        this.startPage = false;
+        this.endPage = true;
+        setTimeout(() => (this.screenLoaded = true), 500);
+      } else {
+        setTimeout(() => (this.screenLoaded = true), 500);
+      }
+    };
     this.$store
       .dispatch("getAppDataFromServer")
-      .then((res) => {})
+      .then((res) => {
+        checkAppComplite();
+      })
       .catch((error) => {
         if (process.env.NODE_ENV !== "development") {
           this.pageHasProblems = true;
         }
+        checkAppComplite();
         console.log("Ошибка:", error);
       });
-
-    window.addEventListener("load", () => {
-      console.log("page-load");
-      setTimeout(() => {
-        this.screenLoaded = true;
-      }, 200);
-    });
   },
 };
 </script>

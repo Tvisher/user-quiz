@@ -4,8 +4,7 @@ import devJson from "./dev-api.js";
 
 const quizID = document.querySelector('#app').dataset.pollId;
 const userID = document.querySelector('#app').dataset.user;
-const isAdmin = document.querySelector('#app').dataset.asdmin ? true : false;
-console.log(isAdmin);
+const isAdmin = document.querySelector('#app').hasAttribute('data-admin') ? true : false;
 export default createStore({
   state: {
     isAdmin,
@@ -40,9 +39,16 @@ export default createStore({
       const userAnswersList = payload.map(item => {
         const hasCurrentAnswers = item.data.optionsData.hasOwnProperty('currentAnswerId') && item.data.optionsData.currentAnswerId.length > 0;
         let currentAnswers = hasCurrentAnswers ? item.data.optionsData.currentAnswerId : [];
-        if (item.type === 'ranging') {
+        if (item.type === 'ranging' && item.data.optionsData.isHasCorrectListAnswers) {
           currentAnswers = item.data.optionsData.optionsList.map(item => item.id);
         }
+        console.log({
+          questionType: item.type,
+          questionId: item.id,
+          optionsList: item.data.optionsData.optionsList,
+          correctAnswer: currentAnswers,
+          userAnswer: [],
+        });
         return {
           questionType: item.type,
           questionId: item.id,
@@ -69,10 +75,17 @@ export default createStore({
         questionItem.userAnswer = [...userAnswer];
       }
     },
-
     setStartTime(state) {
       state.startTime = new Date();
-    }
+    },
+
+    setPreviousWalkthrough: (state, newState) => {
+      for (let key in newState) {
+        state[key] = newState[key]
+      }
+      document.body.style.setProperty("--app-color", state.appSettings.appColor.value);
+      document.body.style.setProperty("--app-text-color", state.appSettings.appTextColor.value);
+    },
 
   },
   actions: {
@@ -87,11 +100,22 @@ export default createStore({
           .then(function (response) {
             console.log(response.data);
             const appData = JSON.parse(response.data.resState);
+
             const quizQuestionsList = appData.pollPages[0].pollList;
-            commit('setQuizQuestionsList', quizQuestionsList);
             const appSettings = appData.appSettings;
 
-            commit('setQuizAppSettings', appSettings);
+
+            const complitedPoll = localStorage.getItem(`${quizID}`);
+            if (!appSettings.takeTheQuizagain && complitedPoll) {
+              commit('setPreviousWalkthrough', JSON.parse(complitedPoll));
+            } else {
+              if (complitedPoll) localStorage.removeItem(`${quizID}`);
+              commit('setQuizQuestionsList', quizQuestionsList);
+              commit('setQuizAppSettings', appSettings);
+            }
+
+            // commit('setQuizQuestionsList', quizQuestionsList);
+            // commit('setQuizAppSettings', appSettings);
             resolve(response);
 
           })
@@ -100,9 +124,17 @@ export default createStore({
             // DEV
             const appData = JSON.parse(devJson.resState);
             const quizQuestionsList = appData.pollPages[0].pollList;
-            commit('setQuizQuestionsList', quizQuestionsList);
             const appSettings = appData.appSettings;
-            commit('setQuizAppSettings', appSettings);
+            const complitedPoll = localStorage.getItem(`${quizID}`);
+            if (!appSettings.takeTheQuizagain && complitedPoll) {
+              commit('setPreviousWalkthrough', JSON.parse(complitedPoll));
+            } else {
+              if (complitedPoll) localStorage.removeItem(`${quizID}`);
+              commit('setQuizQuestionsList', quizQuestionsList);
+              commit('setQuizAppSettings', appSettings);
+            }
+            // commit('setQuizQuestionsList', quizQuestionsList);
+            // commit('setQuizAppSettings', appSettings);
             reject(error);
           });
       });
@@ -113,6 +145,10 @@ export default createStore({
         const serverData = {};
         serverData.informationAboutPassage = JSON.parse(JSON.stringify(state.userAnswers));
         serverData.completionTimeInMilliseconds = new Date() - state.startTime;
+
+        if (!state.appSettings.takeTheQuizagain) {
+          localStorage.setItem(`${state.quizID}`, JSON.stringify(state));
+        }
         axios.post('/local/templates/quiz/resultjson.php',
           {
             id: quizID,
