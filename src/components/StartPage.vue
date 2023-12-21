@@ -46,7 +46,7 @@
 
 <script>
 import axios from "axios";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 export default {
   props: {
     appSettings: { type: Object },
@@ -85,6 +85,7 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(["setStartId"]),
     startQuiz() {
       this.$store.commit("setStartTime");
       this.$emit("startQuiz");
@@ -103,10 +104,11 @@ export default {
             },
           }
         )
-        .then(function (response) {
+        .then((res) => {
           console.log("Начало прохождения викторины!");
+          this.setStartId(res.data);
         })
-        .catch(function (error) {
+        .catch((error) => {
           console.log("Ошибка:", error);
         });
     },

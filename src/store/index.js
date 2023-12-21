@@ -9,6 +9,7 @@ export default createStore({
   state: {
     isAdmin,
     quizID,
+    startId: null,
     appLoaded: false,
     showCurrentAnswer: false,
     quizQuestionsList: [],
@@ -87,6 +88,10 @@ export default createStore({
       document.body.style.setProperty("--app-text-color", state.appSettings.appTextColor.value);
     },
 
+    setStartId(state, startId) {
+      state.startId = startId;
+    }
+
   },
   actions: {
     getAppDataFromServer({ commit }) {
@@ -149,8 +154,10 @@ export default createStore({
         if (!state.appSettings.takeTheQuizagain) {
           localStorage.setItem(`${state.quizID}`, JSON.stringify(state));
         }
+        const startId = state.startId;
         axios.post('/local/templates/quiz/resultjson.php',
           {
+            startId,
             id: quizID,
             user: userID,
             json: serverData,
@@ -170,8 +177,6 @@ export default createStore({
           });
       });
     },
-
-
   }
 });
 
