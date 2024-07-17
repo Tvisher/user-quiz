@@ -154,6 +154,13 @@ export default createStore({
         if (!state.appSettings.takeTheQuizagain) {
           localStorage.setItem(`${state.quizID}`, JSON.stringify(state));
         }
+
+        serverData.informationAboutPassage.forEach(item => {
+          if (item.questionType === "ranging" && item.correctAnswer.length < 1) {
+            item.correctAnswer = item.optionsList.map(option => option.id)
+          }
+        });
+        console.log(serverData);
         const startId = state.startId;
         axios.post('/local/templates/quiz/resultjson.php',
           {
