@@ -532,6 +532,7 @@ textarea.variant-item__filed {
   a {
     color: var(--app-color);
     display: inline;
+    pointer-events: all;
 
     &:hover {
       text-decoration: underline;

@@ -99,8 +99,9 @@ export default {
   &::after {
     position: absolute;
     right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    // top: 50%;
+    // transform: translateY(-50%);
+    top: 18px;
     width: 18px;
     height: 18px;
     content: "";

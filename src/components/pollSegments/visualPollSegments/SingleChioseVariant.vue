@@ -19,15 +19,31 @@
         :name="pollItemId"
         @input="getChecket(option.id)"
       />
+
       <p class="single-choise-visual__text">{{ option.value }}</p>
+      <div
+        class="option-message"
+        v-if="
+          showCurrentAnswer &&
+          option.descriptionValue &&
+          option.id === checkedInputId
+        "
+      >
+        <app-text-from-editor :editorValue="option.descriptionValue" />
+      </div>
     </label>
   </div>
 </template>
 
 <script>
+import AppTextFromEditor from "./TextFromEditor.vue";
+
 import { mapState, mapMutations } from "vuex";
 
 export default {
+  components: {
+    AppTextFromEditor,
+  },
   props: {
     optionsData: Object,
     pollItemId: String,
@@ -124,8 +140,9 @@ export default {
     content: "";
     position: absolute;
     left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 4px;
+    // top: 50%;
+    // transform: translateY(-50%);
     border: 1px solid #c2cfe0;
     border-radius: 50%;
     width: 16px;
@@ -136,8 +153,9 @@ export default {
     content: "";
     position: absolute;
     left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
+    // top: 50%;
+    // transform: translateY(-50%);
+    top: 8px;
     background-color: var(--app-color);
     border-radius: 50%;
     width: 8px;
@@ -162,6 +180,20 @@ export default {
     &:after {
       opacity: 1;
     }
+  }
+}
+
+.option-message {
+  p {
+    margin: 0;
+  }
+  * {
+    font-size: 12px;
+    color: #202020;
+    font-weight: 500;
+  }
+  a {
+    pointer-events: all;
   }
 }
 </style>
