@@ -18,6 +18,7 @@ export default createStore({
     startTime: 0,
     getValidate: false,
     customFildsValid: false,
+    params: null,
   },
   getters: {
     questionHasUserAnswer: state => index => state.userAnswers
@@ -68,6 +69,10 @@ export default createStore({
       state.appLoaded = true;
     },
 
+    setQuizAppParams(state, payload) {
+      state.params = payload
+    },
+
     setUserAnswer(state, { questionId, userAnswer }) {
       const questionItem = state.userAnswers.find(item => item.questionId === questionId);
       if (typeof userAnswer == 'string') {
@@ -105,7 +110,8 @@ export default createStore({
           .then(function (response) {
             console.log(response.data);
             const appData = JSON.parse(response.data.resState);
-
+            const params = response.data.param;
+            commit('setQuizAppParams', params);
             const quizQuestionsList = appData.pollPages[0].pollList;
             const appSettings = appData.appSettings;
 

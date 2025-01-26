@@ -5,7 +5,7 @@
       :class="{ 'screen-loaded': screenLoaded }"
       v-if="appLoaded"
     >
-      <div class="poll-app quiz-app">
+      <div class="poll-app quiz-app" :class="{ 'hide-footer': !isShowFooter }">
         <div class="quiz-app-bg" v-if="hasQuizBg">
           <img :src="appSettings.appQuizBg.path" alt="quiz-bg" />
         </div>
@@ -48,7 +48,7 @@
           </transition>
         </div>
       </div>
-      <div class="quiz-app__footer">
+      <div class="quiz-app__footer" :class="{ 'hide-footer': !isShowFooter }">
         <div class="quiz-app__footer-content">
           <div class="quiz-app__footer-text">Создано в</div>
           <div class="quiz-app__footer-logo"></div>
@@ -94,8 +94,13 @@ export default {
       showCurrentAnswer: (state) => state.showCurrentAnswer,
       userAnswers: (state) => state.userAnswers,
       customFildsValid: (state) => state.customFildsValid,
+      tarifParams: (state) => state.params,
     }),
     ...mapGetters(["questionHasUserAnswer"]),
+    isShowFooter() {
+      console.log(this.tarifParams && this.tarifParams.UF_PODVAL);
+      return this.tarifParams && +this.tarifParams.UF_PODVAL;
+    },
     quizQuestionsListLength() {
       return this.quizQuestionsList.length;
     },
@@ -245,6 +250,9 @@ export default {
 }
 .quiz-app {
   min-height: calc(100vh - 120px);
+  &.hide-footer {
+    min-height: 100vh;
+  }
   padding: 50px;
   width: 100%;
   height: 100%;
@@ -286,6 +294,9 @@ export default {
 }
 
 .quiz-app__footer {
+  &.hide-footer {
+    display: none;
+  }
   z-index: 3;
   position: relative;
   transition: opacity 0.8s ease-in-out;

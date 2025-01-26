@@ -47,12 +47,14 @@
       </div>
       <div class="quiz-end-precent__title">Правильных ответов</div>
     </div>
-    <div class="quiz-end-message" v-if="isHasAppFinalMessage">
-      {{ appSettings.appFinalMessage }}
-    </div>
+    <div
+      class="quiz-end-message"
+      v-if="isHasAppFinalMessage"
+      v-html="appSettings.appFinalMessage"
+    ></div>
     <div class="quiz-end-btns">
       <div class="quiz-end-btn" v-if="isHasCustomLink">
-        <a :href="customFinishLinkUrl" class="btn app-btn">
+        <a :href="customFinishLinkUrl" target="_blank" class="btn app-btn">
           {{ customFinishLinkText }}
         </a>
       </div>
